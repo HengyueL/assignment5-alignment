@@ -20,13 +20,33 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class VLLMCompletion:
+    """
+        Returned content.
+
+        token_ids: RL need this to compute log-probs to avoid re-tokenization (lossy and desync).
+        finish_reason: give a signal whether the rollout is completed or truncated -- later gets negative reward.
+    """
     text: str
-    token_ids: list[int]
+    token_ids: list[int]  
     finish_reason: str | None
 
 
 @dataclass
 class VLLMServer:
+    """
+        Server config.
+
+        gpu: vLLMs gets device 1 (leaving device 0 for the trainer).
+
+        load_format: "auto" reads real checkpoint weights from disk. 
+                     "dummy" starts much faster by skipping disk loading (if we overwrite them via NCCL).
+
+        gpu_memory_utilization: float = 0.9 -- fraction of the vLLM GPU preallocated for weights + KV cache.
+                default value for safety.
+                                    
+                                        
+    """
+
     model_id: str
     host: str = "127.0.0.1"
     port: int = 8000
@@ -40,6 +60,11 @@ class VLLMServer:
     shutdown_timeout: int = 30
 
     def __post_init__(self) -> None:
+        """
+            Why __post_init__:
+            1. A dataclass field default parameter cannot reference other fields in the default.
+            2. It is not the only way to set this field; just the tidiest way.
+        """
         self.base_url = f"http://{self.host}:{self.port}"
         self.process = None
         self.weight_sync_group = None
@@ -127,6 +152,8 @@ def start_server(
     env["CUDA_VISIBLE_DEVICES"] = str(gpu)
     env["VLLM_SERVER_DEV_MODE"] = "1"
     env["VLLM_LOGGING_LEVEL"] = logging_level
+    # vLLM disables pinned memory on WSL2, which Model Runner V2 requires; no-op elsewhere.
+    env.setdefault("VLLM_WSL2_ENABLE_PIN_MEMORY", "1")
     command = [
         "vllm",
         "serve",
