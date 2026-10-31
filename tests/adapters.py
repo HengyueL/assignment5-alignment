@@ -157,7 +157,15 @@ def run_compute_group_normalized_rewards(
                 your choice of other statistics to log (e.g. mean, std, max/min
                 of rewards).
     """
-    raise NotImplementedError
+    from cs336_alignment.assignment_script.compute_grpo_reward import compute_group_normalized_rewards
+
+    return compute_group_normalized_rewards(
+        raw_rewards=raw_rewards,
+        group_size=group_size,
+        baseline=baseline,
+        advantage_eps=advantage_eps,
+        advantage_normalizer=advantage_normalizer,
+    )
 
 
 def run_compute_policy_gradient_loss(
@@ -204,7 +212,18 @@ def run_compute_policy_gradient_loss(
                 Statistics from the underlying loss call, such as
                 clip-fraction components.
     """
-    raise NotImplementedError
+    from cs336_alignment.assignment_script.compute_policy_gradient_loss_on_policy import (
+        compute_policy_gradient_loss,
+    )
+
+    return compute_policy_gradient_loss(
+        raw_rewards_or_advantages=raw_rewards_or_advantages,
+        policy_log_probs=policy_log_probs,
+        importance_reweighting_method=importance_reweighting_method,
+        old_log_probs=old_log_probs,
+        cliprange=cliprange,
+        response_mask=response_mask,
+    )
 
 
 def run_aggregate_loss_across_microbatch(
