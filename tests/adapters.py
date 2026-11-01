@@ -255,7 +255,15 @@ def run_aggregate_loss_across_microbatch(
             A scalar containing the average loss. Make sure you can later call
             backward on this loss.
     """
-    raise NotImplementedError
+    from cs336_alignment.assignment_script.aggregate_loss_across_microbatch_sequence import (
+        aggregate_loss_across_microbatch
+    )
+    return aggregate_loss_across_microbatch(
+        per_token_policy_gradient_loss,
+        mask,
+        loss_normalization,
+        normalization_constant
+    )
 
 
 def run_grpo_train_step(
